@@ -1,0 +1,5 @@
+name: AlbyFriends
+main: fr.algathia.albyfriends.AlbyFriends
+version: 1.0.0-DEV
+author: Vialonyx
+softdepend: [AlgathiaAPI]
