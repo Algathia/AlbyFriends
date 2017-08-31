@@ -3,7 +3,8 @@ package fr.algathia.albyfriends.protocol.packet;
 import fr.algathia.albyfriends.AlbyFriends;
 import fr.algathia.albyfriends.protocol.Packet;
 import fr.algathia.algathiaapi.utils.RedisConstant;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
+
+import java.util.UUID;
 
 /**
  * @author Vialonyx
@@ -25,7 +26,7 @@ public class FriendRequestPacket implements Packet {
     }
 
     @Override
-    public void send(String from, String... args) {
+    public void send(UUID from, String... args) {
         AlbyFriends.get().getJedisUtils().publish(RedisConstant.COMM_CHANNEL_FRIENDS, name() + " " + from + " " + args[0]);
     }
 

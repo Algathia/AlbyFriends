@@ -5,6 +5,8 @@ import fr.algathia.albyfriends.RequestResponseValue;
 import fr.algathia.albyfriends.protocol.Packet;
 import fr.algathia.algathiaapi.utils.RedisConstant;
 
+import java.util.UUID;
+
 /**
  * @author Vialonyx
  */
@@ -37,7 +39,7 @@ public class ResponseRequestPacket implements Packet {
     }
 
     @Override
-    public void send(String from, String... args) {
+    public void send(UUID from, String... args) {
         AlbyFriends.get().getJedisUtils().publish(RedisConstant.COMM_CHANNEL_FRIENDS, name() + " " + from + " " + args[0] + " " + args[1]);
     }
 
