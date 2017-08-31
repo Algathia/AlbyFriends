@@ -1,7 +1,11 @@
 package fr.algathia.albyfriends;
 
+import fr.algathia.albyfriends.commands.FriendCommand;
+import fr.algathia.albyfriends.protocol.ProtocolListener;
+import fr.algathia.albyfriends.protocol.ProtocolManager;
 import fr.algathia.algathiaapi.api.AlgathiaAPI;
 import fr.algathia.algathiaapi.utils.JedisUtils;
+import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
@@ -16,16 +20,25 @@ public class AlbyFriends extends Plugin {
     private static AlbyFriends instance;
     private Configuration configuration;
     private JedisUtils jedisUtils;
+    private ProtocolManager protocolManager;
 
     @Override
     public void onEnable(){
 
         instance = this;
-        getLogger().info("Test");
 
         // Initialization
          initConfig(this.getDataFolder());
          initConnetions();
+
+        // Protocol
+        this.protocolManager = new ProtocolManager();
+        new ProtocolListener();
+
+        // Commands
+        getProxy().getPluginManager().registerCommand(this, new FriendCommand());
+
+        getLogger().info(ChatColor.GREEN + "Friends system succesfully loaded.");
 
     }
 
@@ -57,6 +70,14 @@ public class AlbyFriends extends Plugin {
 
     public static AlbyFriends get(){
         return instance;
+    }
+
+    public ProtocolManager getProtocolManager(){
+        return this.protocolManager;
+    }
+
+    public JedisUtils getJedisUtils(){
+        return this.jedisUtils;
     }
 
 }
