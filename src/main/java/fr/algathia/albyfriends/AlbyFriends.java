@@ -1,5 +1,8 @@
 package fr.algathia.albyfriends;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import fr.algathia.albyfriends.commands.FriendCommand;
 import fr.algathia.albyfriends.protocol.ProtocolListener;
 import fr.algathia.albyfriends.protocol.ProtocolManager;
@@ -14,6 +17,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.util.UUID;
+import java.util.concurrent.TimeUnit;
 
 public class AlbyFriends extends Plugin {
 
@@ -22,6 +27,7 @@ public class AlbyFriends extends Plugin {
     private JedisUtils jedisUtils;
     private ProtocolManager protocolManager;
     private FriendManager friendManager;
+    private LoadingCache<UUID, FriendPlayer> playerCache;
 
     @Override
     public void onEnable(){
@@ -31,6 +37,12 @@ public class AlbyFriends extends Plugin {
         // Initialization
          initConfig(this.getDataFolder());
          initConnetions();
+         this.playerCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).build(new CacheLoader<UUID, FriendPlayer>() {
+             @Override
+             public FriendPlayer load(UUID uuid) throws Exception {
+                 return new FriendPlayer(uuid);
+             }
+         });
 
         // Protocol
         this.protocolManager = new ProtocolManager();
@@ -74,6 +86,10 @@ public class AlbyFriends extends Plugin {
 
     public static AlbyFriends get(){
         return instance;
+    }
+
+    public LoadingCache<UUID, FriendPlayer> getPlayerCache(){
+        return this.playerCache;
     }
 
     public ProtocolManager getProtocolManager(){

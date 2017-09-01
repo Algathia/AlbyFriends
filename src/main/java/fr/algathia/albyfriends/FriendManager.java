@@ -9,6 +9,7 @@ import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author Vialonyx
@@ -28,15 +29,15 @@ public class FriendManager {
 
         ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(fromUUID);
 
-        boolean online = AlbyFriends.get().getProxy().getPlayers().stream()
-                .filter(player -> player.getName().equals(targetName))
-                .findAny().isPresent();
-
-        if(!online){
+        // Checking if player is online
+        try {
+            AlbyFriends.get().getPlayerCache().get(from.getUniqueId());
+        } catch (ExecutionException e) {
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
             return;
         }
 
+        // Sending request
         new FriendRequestPacket().send(
                 fromUUID, AlbyFriends.get().getProxy().getPlayer(targetName).getUniqueId().toString(),
                 this.generateRequestID(from.getName(), targetName, fromUUID, AlbyFriends.get().getProxy().getPlayer(targetName).getUniqueId()));
@@ -53,7 +54,20 @@ public class FriendManager {
         ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(contextIDs[0]);
         ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(contextIDs[1]);
 
-        // TODO Use playerData system to save new friend relation.
+        // Checking if player is online
+        try {
+            AlbyFriends.get().getPlayerCache().get(from.getUniqueId());
+        } catch (ExecutionException e) {
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
+            return;
+        }
+
+        try {
+            AlbyFriends.get().getPlayerCache().get(from.getUniqueId()).getFriends().add(target.getUniqueId());
+            AlbyFriends.get().getPlayerCache().get(target.getUniqueId()).getFriends().add(from.getUniqueId());
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
 
         this.requestIds.remove(requestID);
         from.sendMessage(ChatColor.GOLD + target.getName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM);
@@ -70,6 +84,14 @@ public class FriendManager {
         UUID[] contextIDs = this.requestIds.get(requestID);
         ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(contextIDs[0]);
         ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(contextIDs[1]);
+
+        // Checking if player is online
+        try {
+            AlbyFriends.get().getPlayerCache().get(from.getUniqueId());
+        } catch (ExecutionException e) {
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
+            return;
+        }
 
         this.requestIds.remove(requestID);
         from.sendMessage(ChatColor.GOLD + target.getName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM);
