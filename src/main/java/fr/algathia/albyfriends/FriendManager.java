@@ -83,13 +83,6 @@ public class FriendManager {
         return key;
     }
 
-    public boolean requestExists(String fromName, String targetName){
-        if(this.requestIds.containsKey(fromName+"-"+targetName)){
-            return true;
-        }
-        return false;
-    }
-
     // -- Fromatted messages methods --
 
     public TextComponent getFormattedAcceptMessage(String requestID){
