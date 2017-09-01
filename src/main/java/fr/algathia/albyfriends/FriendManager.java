@@ -4,6 +4,8 @@ import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.packet.FriendRequestPacket;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
+import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.*;
@@ -89,6 +91,7 @@ public class FriendManager {
         TextComponent message = new TextComponent("[ACCEPTER]");
         message.setColor(ChatColor.GREEN);
         message.setBold(true);
+        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GOLD + "Cliquez pour accepter !").create()));
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend accept " + requestID));
         return message;
     }
@@ -97,6 +100,7 @@ public class FriendManager {
         TextComponent message = new TextComponent("[REFUSER]");
         message.setColor(ChatColor.RED);
         message.setBold(true);
+        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GOLD + "Cliquez pour refuser !").create()));
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend decline " + requestID));
         return message;
     }
