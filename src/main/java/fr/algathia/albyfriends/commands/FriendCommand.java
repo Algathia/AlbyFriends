@@ -1,5 +1,6 @@
 package fr.algathia.albyfriends.commands;
 
+import fr.algathia.albyfriends.AlbyFriends;
 import net.md_5.bungee.api.CommandSender;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import net.md_5.bungee.api.plugin.Command;
@@ -30,9 +31,24 @@ public class FriendCommand extends Command {
 
         ProxiedPlayer player = (ProxiedPlayer) commandSender;
 
-        if(args.length < 2){
-            Arrays.stream(CommandResponsePattern.RESPONSE_HELP.getContent()).forEach(line -> player.sendMessage(line));
+        if(args.length < 1){
+            Arrays.stream(CommandResponsePattern.RESPONSE_HELP_MAIN.getContent()).forEach(line -> player.sendMessage(line));
             return;
+        }
+
+        switch (args[0].toLowerCase()){
+
+            case "add":
+                if(args.length < 2){
+                    Arrays.stream(CommandResponsePattern.RESPONSE_HELP_ADD.getContent()).forEach(line -> player.sendMessage(line));
+                    break;
+                }
+                AlbyFriends.get().getFriendManager().sendFriendRequest(player.getUniqueId(), args[1]);
+                break;
+            default:
+                Arrays.stream(CommandResponsePattern.RESPONSE_HELP_MAIN.getContent()).forEach(line -> player.sendMessage(line));
+                break;
+
         }
 
     }

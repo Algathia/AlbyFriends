@@ -8,8 +8,15 @@ import net.md_5.bungee.api.ChatColor;
 
 public enum CommandResponsePattern {
 
-    RESPONSE_HELP(ChatColor.AQUA + "----" + ChatColor.RED + " AlbyFriends " + ChatColor.AQUA + "----",
-            ChatColor.DARK_RED + "Info : Friend system is already in developement. (By vialonyx, btw).");
+    RESPONSE_HELP_MAIN(ChatColor.AQUA + "----" + ChatColor.RED + " AlbyFriends " + ChatColor.AQUA + "----",
+            ChatColor.DARK_RED + "Info : Friend system is already in developement. (By vialonyx, btw)."),
+
+    RESPONSE_HELP_ADD(ChatColor.AQUA + "----" + ChatColor.RED + " AlbyFriends " + ChatColor.AQUA + "----",
+            ChatColor.RED + "Utilisation : " + ChatColor.GOLD + "/friend " + ChatColor.YELLOW + "add " + ChatColor.GOLD + "<Joueur>"),
+
+    RESPONSE_REQUEST_SEND_SUCCESS(ChatColor.GREEN + "Une demande d'ami a été envoyée a "),
+    RESPONSE_REQUEST_NEW(ChatColor.GREEN + "Vous avez reçu une demande d'ami de "),
+    RESPONSE_REQUEST_OFFLINE(ChatColor.RED + "Le joueur n'est pas en ligne");
 
     private String[] responseLines;
     CommandResponsePattern(String... lines){

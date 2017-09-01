@@ -21,6 +21,7 @@ public class AlbyFriends extends Plugin {
     private Configuration configuration;
     private JedisUtils jedisUtils;
     private ProtocolManager protocolManager;
+    private FriendManager friendManager;
 
     @Override
     public void onEnable(){
@@ -34,6 +35,9 @@ public class AlbyFriends extends Plugin {
         // Protocol
         this.protocolManager = new ProtocolManager();
         new ProtocolListener();
+
+        // Manager(s)
+        this.friendManager = new FriendManager();
 
         // Commands
         getProxy().getPluginManager().registerCommand(this, new FriendCommand());
@@ -74,6 +78,10 @@ public class AlbyFriends extends Plugin {
 
     public ProtocolManager getProtocolManager(){
         return this.protocolManager;
+    }
+
+    public FriendManager getFriendManager(){
+        return this.friendManager;
     }
 
     public JedisUtils getJedisUtils(){

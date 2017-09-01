@@ -1,9 +1,11 @@
 package fr.algathia.albyfriends.protocol.packet;
 
 import fr.algathia.albyfriends.AlbyFriends;
+import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.Packet;
+import fr.algathia.algathiaapi.utils.ChatColor;
 import fr.algathia.algathiaapi.utils.RedisConstant;
-
+import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.UUID;
 
 /**
@@ -14,10 +16,12 @@ public class FriendRequestPacket implements Packet {
 
     @Override
     public void execute(String[] args) {
-        // TEMPORARY DEBUG
-        //ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(args[0]);
-        //ProxiedPlayer to = AlbyFriends.get().getProxy().getPlayer(args[1]);
-        AlbyFriends.get().getProxy().broadcast("[Debug] New friend request / " + args[0] + " to " + args[1]);
+
+        ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(UUID.fromString(args[0]));
+        ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(UUID.fromString(args[1]));
+        from.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_SEND_SUCCESS.getContent()[0] + ChatColor.GOLD + target.getDisplayName());
+        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_NEW.getContent()[0] + ChatColor.GOLD + from.getDisplayName());
+
     }
 
     @Override
