@@ -43,13 +43,9 @@ public class FriendManager {
 
     public void acceptRequest(String requestID){
 
-        AlbyFriends.get().getLogger().info("INMETHOD-1");
-
         if(!this.requestIds.containsKey(requestID)){
             return;
         }
-
-        AlbyFriends.get().getLogger().info("INMETHOD-2");
 
         UUID[] contextIDs = this.requestIds.get(requestID);
         ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(contextIDs[0]);
