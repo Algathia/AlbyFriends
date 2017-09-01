@@ -1,10 +1,8 @@
 package fr.algathia.albyfriends.protocol.packet;
 
 import fr.algathia.albyfriends.AlbyFriends;
-import fr.algathia.albyfriends.RequestResponseValue;
 import fr.algathia.albyfriends.protocol.Packet;
 import fr.algathia.algathiaapi.utils.RedisConstant;
-
 import java.util.UUID;
 
 /**
@@ -13,21 +11,17 @@ import java.util.UUID;
 
 public class ResponseRequestPacket implements Packet {
 
-    RequestResponseValue responseValue;
-
     @Override
     public void execute(String[] args) {
-        // TEMPORARY
-        //ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(args[0]);
-        //ProxiedPlayer to = AlbyFriends.get().getProxy().getPlayer(args[1]);
 
         switch (args[2]){
-            case "y" :
-                this.responseValue = RequestResponseValue.ACCEPTED;
+            case "y":
+                AlbyFriends.get().getFriendManager().acceptRequest(args[1]);
                 break;
             case "n":
+                AlbyFriends.get().getFriendManager().declineRequest(args[1]);
+                break;
             default:
-                this.responseValue = RequestResponseValue.REFUSED;
             break;
         }
 
@@ -40,11 +34,8 @@ public class ResponseRequestPacket implements Packet {
 
     @Override
     public void send(UUID from, String... args) {
+        // 0: reqId, 1: y|n
         AlbyFriends.get().getJedisUtils().publish(RedisConstant.COMM_CHANNEL_FRIENDS, name() + " " + from + " " + args[0] + " " + args[1]);
-    }
-
-    public RequestResponseValue getResponse(){
-        return this.responseValue;
     }
 
 }

@@ -14,11 +14,13 @@ import java.util.*;
 
 public class FriendManager {
 
-    private List<String> usedRequestsIDs;
+    private Map<String, UUID[]> requestIds;
 
     public FriendManager(){
-        this.usedRequestsIDs = new ArrayList<>();
+        this.requestIds = new HashMap<>();
     }
+
+    // -- Core methods --
 
     public void sendFriendRequest(UUID fromUUID, String targetName){
 
@@ -33,25 +35,60 @@ public class FriendManager {
             return;
         }
 
-        new FriendRequestPacket().send(fromUUID, AlbyFriends.get().getProxy().getPlayer(targetName).getUniqueId().toString());
+        new FriendRequestPacket().send(
+                fromUUID, AlbyFriends.get().getProxy().getPlayer(targetName).getUniqueId().toString(),
+                this.generateRequestID(from.getName(), targetName, fromUUID, AlbyFriends.get().getProxy().getPlayer(targetName).getUniqueId()));
+
+    }
+
+    public void acceptRequest(String requestID){
+
+        AlbyFriends.get().getLogger().info("INMETHOD-1");
+
+        if(!this.requestIds.containsKey(requestID)){
+            return;
+        }
+
+        AlbyFriends.get().getLogger().info("INMETHOD-2");
+
+        UUID[] contextIDs = this.requestIds.get(requestID);
+        ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(contextIDs[0]);
+        ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(contextIDs[1]);
+
+        // TODO Use playerData system to save new friend relation.
+
+        this.requestIds.remove(requestID);
+        from.sendMessage(ChatColor.GOLD + target.getName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM);
+        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET + "" + ChatColor.GOLD + from.getName());
+
+    }
+
+    public void declineRequest(String requestID){
+
+        if(!this.requestIds.containsKey(requestID)){
+            return;
+        }
+
+        UUID[] contextIDs = this.requestIds.get(requestID);
+        ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(contextIDs[0]);
+        ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(contextIDs[1]);
+
+        this.requestIds.remove(requestID);
+        from.sendMessage(ChatColor.GOLD + target.getName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM);
+        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET + "" + ChatColor.GOLD + from.getName());
 
     }
 
     // -- Requests IDs management methods --
 
-    private String generateRequestID(String fromName, String targetName){
-        String key = this.getFirstCaracters(fromName) +"-"+ this.getFirstCaracters(targetName);
-        this.usedRequestsIDs.add(key);
-        AlbyFriends.get().getLogger().info("(DEBUG) Data added to Request IDs " + key);
+    private String generateRequestID(String fromName, String targetName, UUID fromUUID, UUID targetUUID){
+        String key = fromName +"-"+ targetName;
+        this.requestIds.put(key, new UUID[] {fromUUID, targetUUID});
         return key;
     }
 
-    private String getFirstCaracters(String s){
-        return s.substring(3, Math.min(s.length(), 3));
-    }
-
     public boolean requestExists(String fromName, String targetName){
-        if(this.usedRequestsIDs.contains(this.getFirstCaracters(fromName)+"-"+this.getFirstCaracters(targetName))){
+        if(this.requestIds.containsKey(fromName+"-"+targetName)){
             return true;
         }
         return false;
@@ -67,11 +104,11 @@ public class FriendManager {
         return message;
     }
 
-    public TextComponent getFormattedRefuseMessage(String requestID){
+    public TextComponent getFormattedDeclineMessage(String requestID){
         TextComponent message = new TextComponent("[REFUSER]");
         message.setColor(ChatColor.RED);
         message.setBold(true);
-        message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend refuse " + requestID));
+        message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend decline " + requestID));
         return message;
     }
 

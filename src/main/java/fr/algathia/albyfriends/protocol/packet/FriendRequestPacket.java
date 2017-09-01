@@ -19,8 +19,12 @@ public class FriendRequestPacket implements Packet {
 
         ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(UUID.fromString(args[0]));
         ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(UUID.fromString(args[1]));
+
         from.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_SEND_SUCCESS.getContent()[0] + ChatColor.GOLD + target.getDisplayName());
         target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_NEW.getContent()[0] + ChatColor.GOLD + from.getDisplayName());
+
+        target.sendMessage(AlbyFriends.get().getFriendManager().getFormattedAcceptMessage(args[2]));
+        target.sendMessage(AlbyFriends.get().getFriendManager().getFormattedDeclineMessage(args[2]));
 
     }
 
@@ -31,7 +35,7 @@ public class FriendRequestPacket implements Packet {
 
     @Override
     public void send(UUID from, String... args) {
-        AlbyFriends.get().getJedisUtils().publish(RedisConstant.COMM_CHANNEL_FRIENDS, name() + " " + from + " " + args[0]);
+        AlbyFriends.get().getJedisUtils().publish(RedisConstant.COMM_CHANNEL_FRIENDS, name() + " " + from + " " + args[0] + " " + args[1]);
     }
 
 }
