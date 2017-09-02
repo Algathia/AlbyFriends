@@ -8,6 +8,7 @@ import fr.algathia.albyfriends.protocol.ProtocolListener;
 import fr.algathia.albyfriends.protocol.ProtocolManager;
 import fr.algathia.algathiaapi.api.AlgathiaAPI;
 import fr.algathia.algathiaapi.utils.JedisUtils;
+import fr.algathia.networkmanager.NetworkManager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
@@ -86,6 +87,10 @@ public class AlbyFriends extends Plugin {
 
     public static AlbyFriends get(){
         return instance;
+    }
+
+    public NetworkManager getNetworkManager(){
+        return (NetworkManager) this.getProxy().getPluginManager().getPlugin("NetworkManager");
     }
 
     public LoadingCache<UUID, FriendPlayer> getPlayerCache(){

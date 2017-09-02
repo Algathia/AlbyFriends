@@ -2,4 +2,4 @@ name: AlbyFriends
 main: fr.algathia.albyfriends.AlbyFriends
 version: 1.0.0-DEV
 author: Vialonyx
-depends: [AlgathiaAPI]
+depends: [AlgathiaAPI, NetworkManager]

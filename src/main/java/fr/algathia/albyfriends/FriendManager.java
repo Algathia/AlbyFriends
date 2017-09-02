@@ -2,6 +2,9 @@ package fr.algathia.albyfriends;
 
 import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.packet.FriendRequestPacket;
+import fr.algathia.networkmanager.protocol.packet.SendMessagePacket;
+import fr.algathia.networkmanager.utils.BungeeUUIDFetcher;
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
@@ -18,9 +21,11 @@ import java.util.concurrent.ExecutionException;
 public class FriendManager {
 
     private Map<String, UUID[]> requestIds;
+    private SendMessagePacket messagePacket;
 
     public FriendManager(){
         this.requestIds = new HashMap<>();
+        this.messagePacket = new SendMessagePacket(AlbyFriends.get().getNetworkManager());
     }
 
     // -- Core methods --
@@ -37,10 +42,12 @@ public class FriendManager {
             return;
         }
 
+        UUID targetUUID = BungeeUUIDFetcher.getUUID(targetName);
+
         // Sending request
         new FriendRequestPacket().send(
-                fromUUID, AlbyFriends.get().getProxy().getPlayer(targetName).getUniqueId().toString(),
-                this.generateRequestID(from.getName(), targetName, fromUUID, AlbyFriends.get().getProxy().getPlayer(targetName).getUniqueId()));
+                fromUUID, targetUUID.toString(),
+                this.generateRequestID(from.getName(), targetName, fromUUID, targetUUID));
 
     }
 
@@ -51,27 +58,28 @@ public class FriendManager {
         }
 
         UUID[] contextIDs = this.requestIds.get(requestID);
-        ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(contextIDs[0]);
-        ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(contextIDs[1]);
 
-        // Checking if player is online
         try {
-            AlbyFriends.get().getPlayerCache().get(from.getUniqueId());
+            FriendPlayer from = AlbyFriends.get().getPlayerCache().get(contextIDs[0]);
+            FriendPlayer target = AlbyFriends.get().getPlayerCache().get(contextIDs[1]);
+
+            from.getFriends().add(contextIDs[1]);
+            target.getFriends().add(contextIDs[0]);
+            this.requestIds.remove(requestID);
+
+            this.messagePacket.send(contextIDs[0], BungeeCord.getInstance().gson.toJson(new TextComponent(
+                    ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM
+            )));
+
+            AlbyFriends.get().getProxy().getPlayer(contextIDs[1]).sendMessage(
+                    CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET + target.getPlayerName()
+            );
+
         } catch (ExecutionException e) {
-            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(
+                    line -> this.messagePacket.send(contextIDs[1], BungeeCord.getInstance().gson.toJson(new TextComponent(line))));
             return;
         }
-
-        try {
-            AlbyFriends.get().getPlayerCache().get(from.getUniqueId()).getFriends().add(target.getUniqueId());
-            AlbyFriends.get().getPlayerCache().get(target.getUniqueId()).getFriends().add(from.getUniqueId());
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
-
-        this.requestIds.remove(requestID);
-        from.sendMessage(ChatColor.GOLD + target.getName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM);
-        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET + "" + ChatColor.GOLD + from.getName());
 
     }
 
@@ -82,20 +90,27 @@ public class FriendManager {
         }
 
         UUID[] contextIDs = this.requestIds.get(requestID);
-        ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(contextIDs[0]);
-        ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(contextIDs[1]);
 
-        // Checking if player is online
         try {
-            AlbyFriends.get().getPlayerCache().get(from.getUniqueId());
+
+            FriendPlayer from = AlbyFriends.get().getPlayerCache().get(contextIDs[0]);
+            FriendPlayer target = AlbyFriends.get().getPlayerCache().get(contextIDs[1]);
+            this.requestIds.remove(requestID);
+
+            this.messagePacket.send(contextIDs[0], BungeeCord.getInstance().gson.toJson(new TextComponent(
+                    ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM.getContent()[0]
+            )));
+
+            this.messagePacket.send(contextIDs[1], BungeeCord.getInstance().gson.toJson(new TextComponent(
+                    CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET + "" + ChatColor.GOLD + from.getPlayerName()
+            )));
+
         } catch (ExecutionException e) {
-            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(
+                    line -> this.messagePacket.send(contextIDs[1], BungeeCord.getInstance().gson.toJson(new TextComponent(line)))
+            );
             return;
         }
-
-        this.requestIds.remove(requestID);
-        from.sendMessage(ChatColor.GOLD + target.getName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM);
-        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET + "" + ChatColor.GOLD + from.getName());
 
     }
 
