@@ -30,6 +30,10 @@ public class FriendManager {
 
     // -- Core methods --
 
+    public SendMessagePacket getMessagePacket(){
+        return this.messagePacket;
+    }
+
     public void sendFriendRequest(UUID fromUUID, String targetName){
 
         ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(fromUUID);
@@ -67,13 +71,10 @@ public class FriendManager {
             target.getFriends().add(contextIDs[0]);
             this.requestIds.remove(requestID);
 
-            this.messagePacket.send(contextIDs[0], BungeeCord.getInstance().gson.toJson(new TextComponent(
-                    ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM
-            )));
+            AlbyFriends.get().getProxy().broadcast(from.getIP());
 
-            AlbyFriends.get().getProxy().getPlayer(contextIDs[1]).sendMessage(
-                    CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET + target.getPlayerName()
-            );
+            from.sendMessage(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM.getContent()[0]);
+            target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET + "" + ChatColor.GOLD + from.getPlayerName());
 
         } catch (ExecutionException e) {
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(
@@ -97,13 +98,8 @@ public class FriendManager {
             FriendPlayer target = AlbyFriends.get().getPlayerCache().get(contextIDs[1]);
             this.requestIds.remove(requestID);
 
-            this.messagePacket.send(contextIDs[0], BungeeCord.getInstance().gson.toJson(new TextComponent(
-                    ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM.getContent()[0]
-            )));
-
-            this.messagePacket.send(contextIDs[1], BungeeCord.getInstance().gson.toJson(new TextComponent(
-                    CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET + "" + ChatColor.GOLD + from.getPlayerName()
-            )));
+            from.sendMessage(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM.getContent()[0]);
+            target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET.getContent()[0] + ChatColor.GOLD + from.getPlayerName());
 
         } catch (ExecutionException e) {
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(

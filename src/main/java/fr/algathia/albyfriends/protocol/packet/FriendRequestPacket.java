@@ -3,8 +3,9 @@ package fr.algathia.albyfriends.protocol.packet;
 import fr.algathia.albyfriends.AlbyFriends;
 import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.Packet;
-import fr.algathia.algathiaapi.utils.ChatColor;
 import fr.algathia.algathiaapi.utils.RedisConstant;
+import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.chat.TextComponent;
 import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.UUID;
 
@@ -20,11 +21,18 @@ public class FriendRequestPacket implements Packet {
         ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(UUID.fromString(args[0]));
         ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(UUID.fromString(args[1]));
 
-        from.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_SEND_SUCCESS.getContent()[0] + ChatColor.GOLD + target.getDisplayName());
-        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_NEW.getContent()[0] + ChatColor.GOLD + from.getDisplayName());
+        TextComponent choiseComp = new TextComponent();
+        choiseComp.addExtra(AlbyFriends.get().getFriendManager().getFormattedAcceptMessage(args[2]));
+        choiseComp.addExtra(" ");
+        choiseComp.addExtra(AlbyFriends.get().getFriendManager().getFormattedDeclineMessage(args[2]));
 
-        target.sendMessage(AlbyFriends.get().getFriendManager().getFormattedAcceptMessage(args[2]));
-        target.sendMessage(AlbyFriends.get().getFriendManager().getFormattedDeclineMessage(args[2]));
+        // Message
+        target.sendMessage(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0]);
+        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_NEW.getContent()[0] + ChatColor.GOLD + from.getName() + ChatColor.GREEN + " !");
+        target.sendMessage(choiseComp);
+        target.sendMessage(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0]);
+
+        from.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_SEND_SUCCESS.getContent()[0] + ChatColor.GOLD + target.getDisplayName());
 
     }
 
