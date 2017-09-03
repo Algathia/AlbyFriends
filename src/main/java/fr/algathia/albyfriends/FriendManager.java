@@ -74,7 +74,7 @@ public class FriendManager {
             this.requestIds.remove(requestID);
 
             TextComponent fromComp = new TextComponent(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM.getContent()[0]);
-            TextComponent targetComp = new TextComponent(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET.getContent()[0] + "" + ChatColor.GOLD + from.getPlayerName());
+            TextComponent targetComp = new TextComponent(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET.getContent()[0] + "" + ChatColor.GOLD + from.getPlayerName() + ChatColor.GREEN + " !");
 
             // Sending messages
             from.sendMessage(fromComp);
@@ -103,7 +103,7 @@ public class FriendManager {
             this.requestIds.remove(requestID);
 
             from.sendMessage(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM.getContent()[0]);
-            target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET.getContent()[0] + ChatColor.GOLD + from.getPlayerName());
+            target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET.getContent()[0] + ChatColor.GOLD + from.getPlayerName() + ChatColor.RED + ".");
 
         } catch (ExecutionException e) {
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(
@@ -128,7 +128,7 @@ public class FriendManager {
         TextComponent message = new TextComponent("[ACCEPTER]");
         message.setColor(ChatColor.GREEN);
         message.setBold(true);
-        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GOLD + "Cliquez pour accepter !").create()));
+        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GREEN + "[:)] Cliquez pour accepter !").create()));
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend accept " + requestID));
         return message;
     }
@@ -137,7 +137,7 @@ public class FriendManager {
         TextComponent message = new TextComponent("[REFUSER]");
         message.setColor(ChatColor.RED);
         message.setBold(true);
-        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.GOLD + "Cliquez pour refuser !").create()));
+        message.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.RED + "[:(] Cliquez pour refuser !").create()));
         message.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/friend decline " + requestID));
         return message;
     }
