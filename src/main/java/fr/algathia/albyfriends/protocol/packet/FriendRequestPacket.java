@@ -1,13 +1,14 @@
 package fr.algathia.albyfriends.protocol.packet;
 
 import fr.algathia.albyfriends.AlbyFriends;
+import fr.algathia.albyfriends.FriendPlayer;
 import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.Packet;
 import fr.algathia.algathiaapi.utils.RedisConstant;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 /**
  * @author Vialonyx
@@ -18,21 +19,28 @@ public class FriendRequestPacket implements Packet {
     @Override
     public void execute(String[] args) {
 
-        ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(UUID.fromString(args[0]));
-        ProxiedPlayer target = AlbyFriends.get().getProxy().getPlayer(UUID.fromString(args[1]));
+        try {
+            FriendPlayer from = AlbyFriends.get().getPlayerCache().get(UUID.fromString(args[0]));
+            FriendPlayer target = AlbyFriends.get().getPlayerCache().get(UUID.fromString(args[1]));
 
-        TextComponent choiseComp = new TextComponent();
-        choiseComp.addExtra(AlbyFriends.get().getFriendManager().getFormattedAcceptMessage(args[2]));
-        choiseComp.addExtra(" ");
-        choiseComp.addExtra(AlbyFriends.get().getFriendManager().getFormattedDeclineMessage(args[2]));
+            TextComponent generalTarget = new TextComponent();
+            generalTarget.addExtra(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0] + "\n");
+            generalTarget.addExtra(CommandResponsePattern.RESPONSE_REQUEST_NEW.getContent()[0] + ChatColor.GOLD + from.getPlayerName() + ChatColor.GREEN + " !" + "\n");
+            generalTarget.addExtra(AlbyFriends.get().getFriendManager().getFormattedAcceptMessage(args[2] + "\n"));
+            generalTarget.addExtra(" ");
+            generalTarget.addExtra(AlbyFriends.get().getFriendManager().getFormattedDeclineMessage(args[2] + "\n"));
+            generalTarget.addExtra(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0]);
 
-        // Message
-        target.sendMessage(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0]);
-        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_NEW.getContent()[0] + ChatColor.GOLD + from.getName() + ChatColor.GREEN + " !");
-        target.sendMessage(choiseComp);
-        target.sendMessage(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0]);
+            TextComponent generalFrom = new TextComponent(
+                    CommandResponsePattern.RESPONSE_REQUEST_SEND_SUCCESS.getContent()[0] + ChatColor.GOLD + target.getPlayerName());
 
-        from.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_SEND_SUCCESS.getContent()[0] + ChatColor.GOLD + target.getDisplayName());
+            // Sending messages
+            target.sendMessage(generalTarget);
+            from.sendMessage(generalFrom);
+
+        } catch (ExecutionException e){
+            e.printStackTrace();
+        }
 
     }
 

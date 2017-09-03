@@ -48,33 +48,54 @@ public class FriendManager {
 
         UUID targetUUID = BungeeUUIDFetcher.getUUID(targetName);
 
+        String key = this.generateRequestID(from.getName(), targetName, fromUUID, targetUUID);
+        if(!(this.requestIds.containsKey(key))){
+            AlbyFriends.get().getLogger().info("KEY NOT REGISTERED");
+        }
+
         // Sending request
         new FriendRequestPacket().send(
-                fromUUID, targetUUID.toString(),
-                this.generateRequestID(from.getName(), targetName, fromUUID, targetUUID));
+                fromUUID, targetUUID.toString(), key);
 
     }
 
     public void acceptRequest(String requestID){
 
+        AlbyFriends.get().getLogger().info("000");
+
         if(!this.requestIds.containsKey(requestID)){
             return;
         }
 
+        AlbyFriends.get().getLogger().info("AAA");
+
         UUID[] contextIDs = this.requestIds.get(requestID);
 
         try {
+
+            AlbyFriends.get().getLogger().info("BBB");
+
             FriendPlayer from = AlbyFriends.get().getPlayerCache().get(contextIDs[0]);
             FriendPlayer target = AlbyFriends.get().getPlayerCache().get(contextIDs[1]);
+
+            AlbyFriends.get().getLogger().info("CCC");
 
             from.getFriends().add(contextIDs[1]);
             target.getFriends().add(contextIDs[0]);
             this.requestIds.remove(requestID);
 
-            AlbyFriends.get().getProxy().broadcast(from.getIP());
+            AlbyFriends.get().getLogger().info("DDD");
 
-            from.sendMessage(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM.getContent()[0]);
-            target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET + "" + ChatColor.GOLD + from.getPlayerName());
+            TextComponent fromComp = new TextComponent(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM.getContent()[0]);
+            TextComponent targetComp = new TextComponent(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET.getContent()[0] + "" + ChatColor.GOLD + from.getPlayerName());
+
+            AlbyFriends.get().getLogger().info("EEE");
+
+            // Sending messages
+            from.sendMessage(fromComp);
+            target.sendMessage(targetComp);
+
+            AlbyFriends.get().getLogger().info("FFF");
 
         } catch (ExecutionException e) {
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(
