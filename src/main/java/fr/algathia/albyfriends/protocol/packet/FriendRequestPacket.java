@@ -26,9 +26,9 @@ public class FriendRequestPacket implements Packet {
             TextComponent generalTarget = new TextComponent();
             generalTarget.addExtra(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0] + "\n");
             generalTarget.addExtra(CommandResponsePattern.RESPONSE_REQUEST_NEW.getContent()[0] + ChatColor.GOLD + from.getPlayerName() + ChatColor.GREEN + " !" + "\n");
-            generalTarget.addExtra(AlbyFriends.get().getFriendManager().getFormattedAcceptMessage(args[2] + "\n"));
+            generalTarget.addExtra(AlbyFriends.get().getFriendManager().getFormattedAcceptMessage(args[2])+ "\n");
             generalTarget.addExtra(" ");
-            generalTarget.addExtra(AlbyFriends.get().getFriendManager().getFormattedDeclineMessage(args[2] + "\n"));
+            generalTarget.addExtra(AlbyFriends.get().getFriendManager().getFormattedDeclineMessage(args[2])+ "\n");
             generalTarget.addExtra(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0]);
 
             TextComponent generalFrom = new TextComponent(

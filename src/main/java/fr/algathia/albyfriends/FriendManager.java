@@ -42,7 +42,7 @@ public class FriendManager {
         try {
             AlbyFriends.get().getPlayerCache().get(from.getUniqueId());
         } catch (ExecutionException e) {
-            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).map(TextComponent::new).forEach(from::sendMessage);
             return;
         }
 
