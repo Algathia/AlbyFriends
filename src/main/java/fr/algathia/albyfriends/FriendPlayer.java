@@ -27,7 +27,7 @@ public class FriendPlayer extends IBungeePlayer {
 
     }
 
-    private void saveFriends() {
+    public void saveFriends() {
         JsonArray jsonFriends = new JsonArray();
         friends.stream().map(UUID::toString).forEach(jsonFriends::add);
         this.saveData("friends", jsonFriends.toString());

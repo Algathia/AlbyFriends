@@ -48,6 +48,12 @@ public class FriendManager {
 
         UUID targetUUID = BungeeUUIDFetcher.getUUID(targetName);
 
+        // Checking if player is not already friends
+        if(this.isFriends(from.getUniqueId(), targetUUID)){
+            Arrays.stream(CommandResponsePattern.RESPONSE_FRIENDS_ALREADY.getContent()).forEach(line -> from.sendMessage(line));
+            return;
+        }
+
         String key = this.generateRequestID(from.getName(), targetName, fromUUID, targetUUID);
 
         // Sending request
@@ -111,6 +117,24 @@ public class FriendManager {
             );
             return;
         }
+
+    }
+
+    public boolean isFriends(UUID playerA, UUID playerB){
+
+        try {
+            FriendPlayer A = AlbyFriends.get().getPlayerCache().get(playerA);
+            FriendPlayer B = AlbyFriends.get().getPlayerCache().get(playerB);
+
+            if(A.getFriends().contains(B.getUUID()) && B.getFriends().contains(A.getUUID())){
+                return true;
+            }
+
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+        }
+
+        return false;
 
     }
 

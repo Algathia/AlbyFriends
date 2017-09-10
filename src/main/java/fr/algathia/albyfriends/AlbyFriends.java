@@ -10,18 +10,23 @@ import fr.algathia.algathiaapi.api.AlgathiaAPI;
 import fr.algathia.algathiaapi.utils.JedisUtils;
 import fr.algathia.networkmanager.NetworkManager;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.event.PlayerDisconnectEvent;
+import net.md_5.bungee.api.plugin.Listener;
 import net.md_5.bungee.api.plugin.Plugin;
 import net.md_5.bungee.config.Configuration;
 import net.md_5.bungee.config.ConfigurationProvider;
 import net.md_5.bungee.config.YamlConfiguration;
+import net.md_5.bungee.event.EventHandler;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
-public class AlbyFriends extends Plugin {
+public class AlbyFriends extends Plugin implements Listener {
 
     private static AlbyFriends instance;
     private Configuration configuration;
@@ -49,13 +54,16 @@ public class AlbyFriends extends Plugin {
         this.protocolManager = new ProtocolManager();
         new ProtocolListener();
 
+        // Listener(s)
+        this.getProxy().getPluginManager().registerListener(this, this);
+
         // Manager(s)
         this.friendManager = new FriendManager();
 
-        // Commands
+        // Command(s)
         getProxy().getPluginManager().registerCommand(this, new FriendCommand());
 
-        getLogger().info(ChatColor.GREEN + "Friends system succesfully loaded.");
+        getLogger().log(Level.INFO, () -> ChatColor.GREEN + "Friend system succesfully loaded.");
 
     }
 
@@ -63,6 +71,11 @@ public class AlbyFriends extends Plugin {
     public void onDisable(){
         this.jedisUtils.close();
         super.onDisable();
+    }
+
+    @EventHandler
+    public void onDisconnect(PlayerDisconnectEvent event){
+        this.internalPlayerSave(event.getPlayer().getUniqueId());
     }
 
     private void initConnetions() {
@@ -83,6 +96,19 @@ public class AlbyFriends extends Plugin {
             getLogger().severe(e.getMessage());
             System.exit(0);
         }
+    }
+
+    private void internalPlayerSave(UUID playerID){
+        try {
+            FriendPlayer player = this.getPlayerCache().get(playerID);
+            player.saveFriends();
+        } catch (ExecutionException e) {
+            e.printStackTrace();
+            return;
+        }
+
+        this.getPlayerCache().invalidate(playerID);
+
     }
 
     public static AlbyFriends get(){

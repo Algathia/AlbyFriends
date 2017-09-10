@@ -26,7 +26,9 @@ public enum CommandResponsePattern {
     RESPONSE_REQUEST_ACCEPTED_TARGET(ChatColor.GREEN + "Vous avez accepté la demande d'ami de "),
 
     RESPONSE_REQUEST_DECLINED_FROM(ChatColor.RED + " a refusé votre demande d'ami."),
-    RESPONSE_REQUEST_DECLINED_TARGET(ChatColor.RED + "Vous avez refusé la demande d'ami de ");
+    RESPONSE_REQUEST_DECLINED_TARGET(ChatColor.RED + "Vous avez refusé la demande d'ami de "),
+
+    RESPONSE_FRIENDS_ALREADY(ChatColor.RED + "Vous êtes déjà amis avec ce joueur !");
 
     private String[] responseLines;
     CommandResponsePattern(String... lines){
