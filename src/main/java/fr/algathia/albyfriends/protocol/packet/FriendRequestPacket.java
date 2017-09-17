@@ -20,8 +20,8 @@ public class FriendRequestPacket implements Packet {
     public void execute(String[] args) {
 
         try {
-            FriendPlayer from = AlbyFriends.get().getPlayerCache().get(UUID.fromString(args[0]));
-            FriendPlayer target = AlbyFriends.get().getPlayerCache().get(UUID.fromString(args[1]));
+            FriendPlayer from = new FriendPlayer(UUID.fromString(args[0]));
+            FriendPlayer target = new FriendPlayer(UUID.fromString(args[1]));
 
             TextComponent generalTarget = new TextComponent();
             generalTarget.addExtra(CommandResponsePattern.GLOBAL_SEPARATOR.getContent()[0] + "\n");
@@ -39,7 +39,7 @@ public class FriendRequestPacket implements Packet {
             target.sendMessage(generalTarget);
             from.sendMessage(generalFrom);
 
-        } catch (ExecutionException e){
+        } catch (IllegalAccessError e){
             e.printStackTrace();
         }
 
