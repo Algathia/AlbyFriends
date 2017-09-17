@@ -52,7 +52,7 @@ public class FriendManager {
             return;
         }
 
-        // Checking if the player has not already sent a friend request to this target
+        // Checking if the sender has not a pending request with the target
         Map<String, String> requestKeys = this.redis.hgetAll(RedisConstant.COMM_FRIENDS_REQUESTS_IDS);
         if(requestKeys.containsKey(this.generateRequestID(from.getPlayerName(), targetName, fromUUID, target.getUUID()))){
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_EXISTS.getContent()).forEach(line -> from.sendMessage(line));
