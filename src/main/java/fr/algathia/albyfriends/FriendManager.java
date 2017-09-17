@@ -2,12 +2,15 @@ package fr.algathia.albyfriends;
 
 import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.packet.FriendRequestPacket;
+import fr.algathia.algathiaapi.utils.RedisConstant;
 import fr.algathia.networkmanager.utils.BungeeUUIDFetcher;
+import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import redis.clients.jedis.Jedis;
 import java.util.*;
 
 /**
@@ -16,10 +19,17 @@ import java.util.*;
 
 public class FriendManager {
 
-    private Map<String, UUID[]> requestIds;
+    Jedis redis;
 
     public FriendManager(){
-        this.requestIds = new HashMap<>();
+
+        /**
+         * KEY(id)      KEY(value)
+         * request-id   json(uuid-from/uuid-target)
+         */
+
+        this.redis = AlbyFriends.get().getJedisUtils().getJedis(RedisConstant.DBID_COMM);
+
     }
 
     // -- Core methods --
@@ -30,7 +40,7 @@ public class FriendManager {
         FriendPlayer target = null;
 
         try {
-           target = new FriendPlayer(BungeeUUIDFetcher.getUUID(targetName));
+            target = new FriendPlayer(BungeeUUIDFetcher.getUUID(targetName));
         } catch (IllegalAccessError e){
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
             return;
@@ -52,24 +62,25 @@ public class FriendManager {
 
     public void acceptRequest(String requestID){
 
-        if(!this.requestIds.containsKey(requestID)){
+        if(!this.isValidKey(requestID)){
             return;
         }
 
-        UUID[] contextIDs = this.requestIds.get(requestID);
+        Map<String, String> requestKeys = this.redis.hgetAll(RedisConstant.COMM_FRIENDS_REQUESTS_IDS);
+        String[] uuids = requestKeys.get(requestID).replace("\"", "").split(":");
 
         FriendPlayer from = null;
-        FriendPlayer target = new FriendPlayer(contextIDs[1]);
+        FriendPlayer target = new FriendPlayer(UUID.fromString(uuids[1]));
 
         try {
-            from = new FriendPlayer(contextIDs[0]);
+            from = new FriendPlayer(UUID.fromString(uuids[0]));
         } catch (IllegalAccessError e){
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> target.sendMessage(line));
             return;
         }
 
-        target.getFriends().add(contextIDs[0]);
-        this.requestIds.remove(requestID);
+        target.getFriends().add(UUID.fromString(uuids[0]));
+        this.redis.hdel(RedisConstant.COMM_FRIENDS_REQUESTS_IDS, requestID);   // NOT SURE, NEED TO BE TESTED /!\
 
         TextComponent fromComp = new TextComponent(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM.getContent()[0]);
         TextComponent targetComp = new TextComponent(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET.getContent()[0] + "" + ChatColor.GOLD + from.getPlayerName() + ChatColor.GREEN + " !");
@@ -82,25 +93,27 @@ public class FriendManager {
 
     public void declineRequest(String requestID){
 
-        if(!this.requestIds.containsKey(requestID)){
+        if(!this.isValidKey(requestID)){
             return;
         }
 
-        UUID[] contextIDs = this.requestIds.get(requestID);
+        Map<String, String> requestKeys = this.redis.hgetAll(RedisConstant.COMM_FRIENDS_REQUESTS_IDS);
+        String[] uuids = requestKeys.get(requestID).replace("\"", "").split(":");
 
         FriendPlayer from = null;
-        FriendPlayer target = new FriendPlayer(contextIDs[1]);
+        FriendPlayer target = new FriendPlayer(UUID.fromString(uuids[1]));
 
         try {
-            from = new FriendPlayer(contextIDs[0]);
+            from = new FriendPlayer(UUID.fromString(uuids[0]));
         } catch (IllegalAccessError e){
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> target.sendMessage(line));
             return;
         }
 
-        this.requestIds.remove(requestID);
         from.sendMessage(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM.getContent()[0]);
         target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET.getContent()[0] + ChatColor.GOLD + from.getPlayerName() + ChatColor.RED + ".");
+
+        this.redis.hdel(RedisConstant.COMM_FRIENDS_REQUESTS_IDS, requestID);   // NOT SURE, NEED TO BE TESTED /!\
 
     }
 
@@ -117,9 +130,22 @@ public class FriendManager {
     // -- Requests IDs management methods --
 
     private String generateRequestID(String fromName, String targetName, UUID fromUUID, UUID targetUUID){
+
         String key = fromName +"-"+ targetName;
-        this.requestIds.put(key, new UUID[] {fromUUID, targetUUID});
+        this.redis.hset(RedisConstant.COMM_FRIENDS_REQUESTS_IDS, key, BungeeCord.getInstance().gson.toJson(fromUUID + ":" + targetUUID));
+        AlbyFriends.get().getLogger().info(ChatColor.DARK_RED + "[DEBUG] " + ChatColor.RED + "Clé générée et enregistrée dans REDIS");
         return key;
+
+    }
+
+    private boolean isValidKey(String requestKey){
+
+        if(this.redis.hgetAll(RedisConstant.COMM_FRIENDS_REQUESTS_IDS).containsKey(requestKey)){
+            return true;
+        }
+
+        return false;
+
     }
 
     // -- Fromatted messages methods --
