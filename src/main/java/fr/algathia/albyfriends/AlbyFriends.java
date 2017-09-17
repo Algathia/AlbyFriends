@@ -1,8 +1,5 @@
 package fr.algathia.albyfriends;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
 import fr.algathia.albyfriends.commands.FriendCommand;
 import fr.algathia.albyfriends.protocol.ProtocolListener;
 import fr.algathia.albyfriends.protocol.ProtocolManager;
@@ -22,8 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 
 public class AlbyFriends extends Plugin implements Listener {
@@ -33,7 +28,6 @@ public class AlbyFriends extends Plugin implements Listener {
     private JedisUtils jedisUtils;
     private ProtocolManager protocolManager;
     private FriendManager friendManager;
-    private LoadingCache<UUID, FriendPlayer> playerCache;
 
     @Override
     public void onEnable(){
@@ -43,12 +37,6 @@ public class AlbyFriends extends Plugin implements Listener {
         // Initialization
          initConfig(this.getDataFolder());
          initConnetions();
-         this.playerCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.MINUTES).build(new CacheLoader<UUID, FriendPlayer>() {
-             @Override
-             public FriendPlayer load(UUID uuid) throws Exception {
-                 return new FriendPlayer(uuid);
-             }
-         });
 
         // Protocol
         this.protocolManager = new ProtocolManager();
@@ -99,15 +87,14 @@ public class AlbyFriends extends Plugin implements Listener {
     }
 
     private void internalPlayerSave(UUID playerID){
+
         try {
-            FriendPlayer player = this.getPlayerCache().get(playerID);
+            FriendPlayer player = new FriendPlayer(playerID);
             player.saveFriends();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        } catch (IllegalAccessError e){
+            this.getLogger().info("Error during friend saving for player " + playerID);
             return;
         }
-
-        this.getPlayerCache().invalidate(playerID);
 
     }
 
@@ -117,10 +104,6 @@ public class AlbyFriends extends Plugin implements Listener {
 
     public NetworkManager getNetworkManager(){
         return (NetworkManager) this.getProxy().getPluginManager().getPlugin("NetworkManager");
-    }
-
-    public LoadingCache<UUID, FriendPlayer> getPlayerCache(){
-        return this.playerCache;
     }
 
     public ProtocolManager getProtocolManager(){

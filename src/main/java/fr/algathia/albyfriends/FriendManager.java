@@ -2,17 +2,13 @@ package fr.algathia.albyfriends;
 
 import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.packet.FriendRequestPacket;
-import fr.algathia.networkmanager.protocol.packet.SendMessagePacket;
 import fr.algathia.networkmanager.utils.BungeeUUIDFetcher;
-import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.connection.ProxiedPlayer;
 import java.util.*;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Vialonyx
@@ -21,44 +17,36 @@ import java.util.concurrent.ExecutionException;
 public class FriendManager {
 
     private Map<String, UUID[]> requestIds;
-    private SendMessagePacket messagePacket;
 
     public FriendManager(){
         this.requestIds = new HashMap<>();
-        this.messagePacket = new SendMessagePacket(AlbyFriends.get().getNetworkManager());
     }
 
     // -- Core methods --
 
-    public SendMessagePacket getMessagePacket(){
-        return this.messagePacket;
-    }
-
     public void sendFriendRequest(UUID fromUUID, String targetName){
 
-        ProxiedPlayer from = AlbyFriends.get().getProxy().getPlayer(fromUUID);
+        FriendPlayer from = new FriendPlayer(fromUUID);
+        FriendPlayer target = null;
 
-        // Checking if player is online
         try {
-            AlbyFriends.get().getPlayerCache().get(from.getUniqueId());
-        } catch (ExecutionException e) {
-            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).map(TextComponent::new).forEach(from::sendMessage);
+           target = new FriendPlayer(BungeeUUIDFetcher.getUUID(targetName));
+        } catch (IllegalAccessError e){
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
             return;
         }
 
-        UUID targetUUID = BungeeUUIDFetcher.getUUID(targetName);
-
         // Checking if player is not already friends
-        if(this.isFriends(from.getUniqueId(), targetUUID)){
+        if(this.isFriends(from, target)){
             Arrays.stream(CommandResponsePattern.RESPONSE_FRIENDS_ALREADY.getContent()).forEach(line -> from.sendMessage(line));
             return;
         }
 
-        String key = this.generateRequestID(from.getName(), targetName, fromUUID, targetUUID);
+        // Generate the request key
+        String key = this.generateRequestID(from.getPlayerName(), targetName, fromUUID, target.getUUID());
 
         // Sending request
-        new FriendRequestPacket().send(
-                fromUUID, targetUUID.toString(), key);
+        new FriendRequestPacket().send(fromUUID, target.getUUID().toString(), key);
 
     }
 
@@ -70,27 +58,25 @@ public class FriendManager {
 
         UUID[] contextIDs = this.requestIds.get(requestID);
 
+        FriendPlayer from = null;
+        FriendPlayer target = new FriendPlayer(contextIDs[1]);
+
         try {
-
-            FriendPlayer from = AlbyFriends.get().getPlayerCache().get(contextIDs[0]);
-            FriendPlayer target = AlbyFriends.get().getPlayerCache().get(contextIDs[1]);
-
-            from.getFriends().add(contextIDs[1]);
-            target.getFriends().add(contextIDs[0]);
-            this.requestIds.remove(requestID);
-
-            TextComponent fromComp = new TextComponent(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM.getContent()[0]);
-            TextComponent targetComp = new TextComponent(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET.getContent()[0] + "" + ChatColor.GOLD + from.getPlayerName() + ChatColor.GREEN + " !");
-
-            // Sending messages
-            from.sendMessage(fromComp);
-            target.sendMessage(targetComp);
-
-        } catch (ExecutionException e) {
-            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(
-                    line -> this.messagePacket.send(contextIDs[1], BungeeCord.getInstance().gson.toJson(new TextComponent(line))));
+            from = new FriendPlayer(contextIDs[0]);
+        } catch (IllegalAccessError e){
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> target.sendMessage(line));
             return;
         }
+
+        target.getFriends().add(contextIDs[0]);
+        this.requestIds.remove(requestID);
+
+        TextComponent fromComp = new TextComponent(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_FROM.getContent()[0]);
+        TextComponent targetComp = new TextComponent(CommandResponsePattern.RESPONSE_REQUEST_ACCEPTED_TARGET.getContent()[0] + "" + ChatColor.GOLD + from.getPlayerName() + ChatColor.GREEN + " !");
+
+        // Sending messages
+        from.sendMessage(fromComp);
+        target.sendMessage(targetComp);
 
     }
 
@@ -102,36 +88,26 @@ public class FriendManager {
 
         UUID[] contextIDs = this.requestIds.get(requestID);
 
+        FriendPlayer from = null;
+        FriendPlayer target = new FriendPlayer(contextIDs[1]);
+
         try {
-
-            FriendPlayer from = AlbyFriends.get().getPlayerCache().get(contextIDs[0]);
-            FriendPlayer target = AlbyFriends.get().getPlayerCache().get(contextIDs[1]);
-            this.requestIds.remove(requestID);
-
-            from.sendMessage(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM.getContent()[0]);
-            target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET.getContent()[0] + ChatColor.GOLD + from.getPlayerName() + ChatColor.RED + ".");
-
-        } catch (ExecutionException e) {
-            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(
-                    line -> this.messagePacket.send(contextIDs[1], BungeeCord.getInstance().gson.toJson(new TextComponent(line)))
-            );
+            from = new FriendPlayer(contextIDs[0]);
+        } catch (IllegalAccessError e){
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> target.sendMessage(line));
             return;
         }
 
+        this.requestIds.remove(requestID);
+        from.sendMessage(ChatColor.GOLD + target.getPlayerName() + CommandResponsePattern.RESPONSE_REQUEST_DECLINED_FROM.getContent()[0]);
+        target.sendMessage(CommandResponsePattern.RESPONSE_REQUEST_DECLINED_TARGET.getContent()[0] + ChatColor.GOLD + from.getPlayerName() + ChatColor.RED + ".");
+
     }
 
-    public boolean isFriends(UUID playerA, UUID playerB){
+    public boolean isFriends(FriendPlayer playerA, FriendPlayer playerB){
 
-        try {
-            FriendPlayer A = AlbyFriends.get().getPlayerCache().get(playerA);
-            FriendPlayer B = AlbyFriends.get().getPlayerCache().get(playerB);
-
-            if(A.getFriends().contains(B.getUUID()) && B.getFriends().contains(A.getUUID())){
-                return true;
-            }
-
-        } catch (ExecutionException e) {
-            e.printStackTrace();
+        if(playerA.getFriends().contains(playerB.getUUID()) && playerB.getFriends().contains(playerA.getUUID())){
+            return true;
         }
 
         return false;
