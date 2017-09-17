@@ -41,7 +41,7 @@ public class FriendManager {
 
         try {
             target = new FriendPlayer(BungeeUUIDFetcher.getUUID(targetName));
-        } catch (IllegalAccessError e){
+        } catch (IllegalAccessError | IllegalArgumentException e){
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> from.sendMessage(line));
             return;
         }
@@ -82,7 +82,7 @@ public class FriendManager {
 
         try {
             from = new FriendPlayer(UUID.fromString(uuids[0]));
-        } catch (IllegalAccessError e){
+        } catch (IllegalAccessError | IllegalArgumentException e){
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> target.sendMessage(line));
             return;
         }
@@ -113,7 +113,7 @@ public class FriendManager {
 
         try {
             from = new FriendPlayer(UUID.fromString(uuids[0]));
-        } catch (IllegalAccessError e){
+        } catch (IllegalAccessError | IllegalArgumentException e){
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_OFFLINE.getContent()).forEach(line -> target.sendMessage(line));
             return;
         }
