@@ -52,8 +52,16 @@ public class FriendManager {
             return;
         }
 
-        // Generate the request key
+        // Checking if the player has not already sent a friend request to this target
+        Map<String, String> requestKeys = this.redis.hgetAll(RedisConstant.COMM_FRIENDS_REQUESTS_IDS);
+        if(requestKeys.containsKey(this.generateRequestID(from.getPlayerName(), targetName, fromUUID, target.getUUID()))){
+            Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_EXISTS.getContent()).forEach(line -> from.sendMessage(line));
+            return;
+        }
+
+        // Generate & sending the request key
         String key = this.generateRequestID(from.getPlayerName(), targetName, fromUUID, target.getUUID());
+        this.redis.hset(RedisConstant.COMM_FRIENDS_REQUESTS_IDS, key, BungeeCord.getInstance().gson.toJson(fromUUID + ":" + target.getUUID()));
 
         // Sending request
         new FriendRequestPacket().send(fromUUID, target.getUUID().toString(), key);
@@ -132,8 +140,6 @@ public class FriendManager {
     private String generateRequestID(String fromName, String targetName, UUID fromUUID, UUID targetUUID){
 
         String key = fromName +"-"+ targetName;
-        this.redis.hset(RedisConstant.COMM_FRIENDS_REQUESTS_IDS, key, BungeeCord.getInstance().gson.toJson(fromUUID + ":" + targetUUID));
-        AlbyFriends.get().getLogger().info(ChatColor.DARK_RED + "[DEBUG] " + ChatColor.RED + "Clé générée et enregistrée dans REDIS");
         return key;
 
     }
