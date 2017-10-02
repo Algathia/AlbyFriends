@@ -2,7 +2,7 @@ package fr.algathia.albyfriends;
 
 import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.packet.FriendRequestPacket;
-import fr.algathia.algathiaapi.utils.RedisConstant;
+import fr.algathia.commons.RedisConstant;
 import fr.algathia.networkmanager.utils.BungeeUUIDFetcher;
 import net.md_5.bungee.BungeeCord;
 import net.md_5.bungee.api.ChatColor;
@@ -39,6 +39,7 @@ public class FriendManager {
         FriendPlayer from = new FriendPlayer(fromUUID);
         FriendPlayer target = null;
 
+        // Check if the player is online
         try {
             target = new FriendPlayer(BungeeUUIDFetcher.getUUID(targetName));
         } catch (IllegalAccessError | IllegalArgumentException e){
@@ -46,13 +47,19 @@ public class FriendManager {
             return;
         }
 
-        // Checking if player is not already friends
+        // Check if the player is trying to add itself
+        if(from.getUUID().equals(target.getUUID())){
+            Arrays.stream(CommandResponsePattern.RESPONSE_ADD_ITSELF.getContent()).forEach(line -> from.sendMessage(line));
+            return;
+        }
+
+        // Check if player is not already friends
         if(this.isFriends(from, target)){
             Arrays.stream(CommandResponsePattern.RESPONSE_FRIENDS_ALREADY.getContent()).forEach(line -> from.sendMessage(line));
             return;
         }
 
-        // Checking if the sender has not a pending request with the target
+        // Check if the sender has not a pending request with the target
         Map<String, String> requestKeys = this.redis.hgetAll(RedisConstant.COMM_FRIENDS_REQUESTS_IDS);
         if(requestKeys.containsKey(this.generateRequestID(from.getPlayerName(), targetName, fromUUID, target.getUUID()))){
             Arrays.stream(CommandResponsePattern.RESPONSE_REQUEST_EXISTS.getContent()).forEach(line -> from.sendMessage(line));

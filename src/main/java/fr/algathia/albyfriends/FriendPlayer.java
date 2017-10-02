@@ -3,6 +3,7 @@ package fr.algathia.albyfriends;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
 import fr.algathia.algathiaapi.impl.player.IBungeePlayer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;

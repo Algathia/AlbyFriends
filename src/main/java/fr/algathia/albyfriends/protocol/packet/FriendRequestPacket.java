@@ -4,11 +4,10 @@ import fr.algathia.albyfriends.AlbyFriends;
 import fr.algathia.albyfriends.FriendPlayer;
 import fr.algathia.albyfriends.commands.CommandResponsePattern;
 import fr.algathia.albyfriends.protocol.Packet;
-import fr.algathia.algathiaapi.utils.RedisConstant;
+import fr.algathia.commons.RedisConstant;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.chat.TextComponent;
 import java.util.UUID;
-import java.util.concurrent.ExecutionException;
 
 /**
  * @author Vialonyx

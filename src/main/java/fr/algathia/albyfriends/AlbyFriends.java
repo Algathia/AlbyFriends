@@ -4,7 +4,7 @@ import fr.algathia.albyfriends.commands.FriendCommand;
 import fr.algathia.albyfriends.protocol.ProtocolListener;
 import fr.algathia.albyfriends.protocol.ProtocolManager;
 import fr.algathia.algathiaapi.api.AlgathiaAPI;
-import fr.algathia.algathiaapi.utils.JedisUtils;
+import fr.algathia.commons.JedisUtils;
 import fr.algathia.networkmanager.NetworkManager;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.event.PlayerDisconnectEvent;

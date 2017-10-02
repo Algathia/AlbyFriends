@@ -2,7 +2,7 @@ package fr.algathia.albyfriends.protocol;
 
 import fr.algathia.albyfriends.AlbyFriends;
 import fr.algathia.algathiaapi.utils.ChatColor;
-import fr.algathia.algathiaapi.utils.RedisConstant;
+import fr.algathia.commons.RedisConstant;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
 import java.util.concurrent.TimeUnit;

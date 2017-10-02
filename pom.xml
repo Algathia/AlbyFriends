@@ -40,14 +40,12 @@
                 </configuration>
             </plugin>
         </plugins>
-
     </build>
-
 
     <repositories>
         <repository>
-            <id>Algathia-APIProd</id>
-            <url>http://maven.pelt10.fr/artifactory/API-Prod/</url>
+            <id>Algathia-infrastructure</id>
+            <url>http://maven.pelt10.fr/artifactory/infrastructure</url>
         </repository>
         <repository>
             <id>Algathia-public</id>
@@ -57,8 +55,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>fr.algathia</groupId>
-            <artifactId>AlgathiaAPI</artifactId>
+            <groupId>fr.algathia.algathiaapi</groupId>
+            <artifactId>AlgathiaAPI-Core</artifactId>
             <version>BETA-2.0</version>
             <scope>provided</scope>
         </dependency>
@@ -69,15 +67,9 @@
             <scope>provided</scope>
         </dependency>
         <dependency>
-            <groupId>fr.algathia</groupId>
+            <groupId>fr.algathia.networkmanager</groupId>
             <artifactId>NetworkManager</artifactId>
             <version>2.0-BETA</version>
-        </dependency>
-        <dependency>
-            <groupId>redis.clients</groupId>
-            <artifactId>jedis</artifactId>
-            <version>2.9.0</version>
-            <type>jar</type>
             <scope>provided</scope>
         </dependency>
     </dependencies>

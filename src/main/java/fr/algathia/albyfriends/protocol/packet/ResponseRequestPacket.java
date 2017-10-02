@@ -2,7 +2,7 @@ package fr.algathia.albyfriends.protocol.packet;
 
 import fr.algathia.albyfriends.AlbyFriends;
 import fr.algathia.albyfriends.protocol.Packet;
-import fr.algathia.algathiaapi.utils.RedisConstant;
+import fr.algathia.commons.RedisConstant;
 import java.util.UUID;
 
 /**
