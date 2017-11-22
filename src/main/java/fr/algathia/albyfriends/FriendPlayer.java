@@ -2,8 +2,7 @@ package fr.algathia.albyfriends;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonParser;
-import fr.algathia.algathiaapi.impl.player.IBungeePlayer;
-
+import fr.algathia.algathiaapi.api.player.BungeePlayer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -12,7 +11,7 @@ import java.util.UUID;
  * @author Vialonyx
  */
 
-public class FriendPlayer extends IBungeePlayer {
+public class FriendPlayer extends BungeePlayer {
 
     List<UUID> friends;
 
